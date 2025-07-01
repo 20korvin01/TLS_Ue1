@@ -47,15 +47,17 @@ def project_points_onto_plane(points_3d, plane_model):
     return points_2d
 
 
-
 if __name__ == "__main__":
     ###TODO 0. SCHRITT: Daten einlesen und vorbereiten -------------------------------------------------------------------
     data_SP1 = "SP1/"
     data_SP2 = "SP2/"
 
-    for dir in tqdm([data_SP1, data_SP2], desc="Verarbeite Verzeichnisse"):
+    # for dir in tqdm([data_SP1, data_SP2], desc="Verarbeite Verzeichnisse"):
+    #     dir_path = f"data/Targets/{dir}"
+    #     for filename in tqdm(os.listdir(dir_path), desc=f"Dateien in {dir}"):
+    for dir in [data_SP1, data_SP2]:
         dir_path = f"data/Targets/{dir}"
-        for filename in tqdm(os.listdir(dir_path), desc=f"Dateien in {dir}"):
+        for filename in os.listdir(dir_path):
             file_path = os.path.join(dir_path, filename)
 
             ## Punktwolke + Zusatzdaten laden
@@ -90,15 +92,38 @@ if __name__ == "__main__":
             
             ###TODO 2. SCHRITT: Kantendetektion --------------------------------------------------------------------------
             """ Annahme: Punkte auf der Kante zwischen schwarzen und weißen Flächen haben 'mittlere Intensitäten' """
-            plt.figure(figsize=(10, 6))
-            plt.hist(inlier_intensity, bins=100, edgecolor='black', alpha=0.7) # Du kannst die Anzahl der Bins anpassen
-            plt.title('Histogramm der Intensitäten')
+            #* Histogramm der Intensitäten erstellen
+            hist, bin_edges = np.histogram(inlier_intensity, bins=200)
+            
+            #* Oberes und unteres Maximum des Histogramms finden
+            upper_max_idx = np.argmax(hist[len(hist)//2:]) + len(hist)//2
+            lower_max_idx = np.argmax(hist[:len(hist)//2])
+            upper_max = bin_edges[upper_max_idx] + (bin_edges[1] - bin_edges[0]) / 2  # Mitte des Bins
+            lower_max = bin_edges[lower_max_idx] + (bin_edges[1] - bin_edges[0]) / 2  # Mitte des Bins
+                        
+            
+            #* Schwellwerte für 'mittlere Intensitäten' definieren
+            percentage = 20  # Prozentuale Abweichung von der Mitte der Intensitätswerte
+            range = upper_max_idx - lower_max_idx
+            center_idx = (upper_max_idx + lower_max_idx) // 2
+            threshold_upper_idx = center_idx + int(range//2 * percentage / 100)
+            threshold_lower_idx = center_idx - int(range//2 * percentage / 100)
+            
+            #* Plotten des Histogramms
+            plt.figure(figsize=(10, 5))
+            plt.bar(bin_edges[:-1], hist, width=np.diff(bin_edges), edgecolor='black', align='edge', alpha=0.7)
+            plt.axvline(x=upper_max, color='r', linestyle='-', label='Oberes Maximum')
+            plt.axvline(x=lower_max, color='r', linestyle='-', label='Unteres Maximum')
+            plt.axvline(x=bin_edges[threshold_upper_idx], color='g', linestyle='--', label='Oberer Schwellwert')
+            plt.axvline(x=bin_edges[threshold_lower_idx], color='g', linestyle='--', label='Unterer Schwellwert')
             plt.xlabel('Intensität')
             plt.ylabel('Häufigkeit')
-            plt.grid(axis='y', alpha=0.75)
+            plt.grid()
             plt.tight_layout()
-            plt.savefig(f"./plots/Histograms/{dir}/{filename.strip('.txt')}_intensity_histogram.png")
+            plt.savefig(f"./plots/Histograms/{dir}/{filename.strip('.txt')}_histogram.png")
             plt.close('all')
+            
+            
             
             ###TODO LETZTER SCHRITT: Speichern der Zwischenergebnisse ----------------------------------------------------
             #* Inlier speichern -> zunächst mit RGB und Intensität kombinieren
