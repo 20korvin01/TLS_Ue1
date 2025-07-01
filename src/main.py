@@ -56,47 +56,16 @@ if __name__ == "__main__":
 
     # * Targetzentren, die später für die Auswertung der Ergebnisse verwendet werden
     target_centers_SP1 = {
-        "T1": [
-            [],
-            [],
-            [],
-        ],
-        "T2": [
-            [],
-            [],
-            [],
-        ],
-        "T3": [  # T3.3 ist leider nicht brauchbar, da zu wenige Punkte gescannt wurden
-            [],
-            [],
-        ],
-        "T4": [
-            [],
-            [],
-            [],
-        ],
+        "T1": [],
+        "T2": [],
+        "T3": [],
+        "T4": [],
     }
     target_centers_SP2 = {
-        "T1": [
-            [],
-            [],
-            [],
-        ],
-        "T2": [
-            [],
-            [],
-            [],
-        ],
-        "T3": [
-            [],
-            [],
-            [],
-        ],
-        "T4": [
-            [],
-            [],
-            [],
-        ],
+        "T1": [],
+        "T2": [],
+        "T3": [],
+        "T4": [],
     }
 
     # for dir in [data_SP1, data_SP2]:
@@ -418,16 +387,9 @@ if __name__ == "__main__":
             # * Targetzentren in die Dictionaries eintragen
             target_name = filename.strip(".txt").split(".")[0]
             if dir == data_SP1:
-                target_centers_SP1[target_name][0] = target_center_3d[0]
-                target_centers_SP1[target_name][1] = target_center_3d[1]
-                try:
-                    target_centers_SP1[target_name][2] = target_center_3d[2]
-                except:
-                    pass
-            else:
-                target_centers_SP2[target_name][0] = target_center_3d[0]
-                target_centers_SP2[target_name][1] = target_center_3d[1]
-                target_centers_SP2[target_name][2] = target_center_3d[2]
+                target_centers_SP1[target_name] = target_centers_SP1[target_name] + [target_center_3d.tolist()]
+            elif dir == data_SP2:
+                target_centers_SP2[target_name] = target_centers_SP2[target_name] + [target_center_3d.tolist()]
 
         #     break
         # break
